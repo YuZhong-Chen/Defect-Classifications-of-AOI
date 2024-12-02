@@ -1,0 +1,5 @@
+/.vscode
+
+# Dataset
+/data/*
+!/data/.gitkeep
