@@ -48,3 +48,9 @@ def SaveModel(model: nn.Module, path: Path) -> None:
     path.mkdir(exist_ok=True)
     torch.save({"model": model.state_dict()}, path / "model.pth")
     return
+
+
+def LoadModel(model: nn.Module, path: Path) -> nn.Module:
+    print(f"Loading model from {path}")
+    model.load_state_dict(torch.load(path / "model.pth")["model"])
+    return model
