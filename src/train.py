@@ -15,17 +15,18 @@ from logger import Logger
 # Project Configurations
 PROJECT = "aoi-classification"
 PROJECT_NAME = PROJECT + "-basic-" + datetime.datetime.now().strftime("%m-%d-%H-%M")
-ENABLE_LOGGER = False
-ENABLE_WANDB = False
+ENABLE_LOGGER = True
+ENABLE_WANDB = True
 
 # Training Configurations
 config = {}
 config["BATCH_SIZE"] = 128
-config["TRAIN_SIZE"] = 0.8
-config["NUM_EPOCHS"] = 50
+config["TRAINING_SET_RATIO"] = 0.8
+config["NUM_EPOCHS"] = 20
 config["LEARNING_RATE"] = 0.0002
-config["OPTIMIZER"] = "Adam" # "Adam" or "SGD"
-config["LOSS_FUNC"] = "CrossEntropy" # "MSE" or "CrossEntropy"
+config["TEST_PERIOD"] = 5
+config["OPTIMIZER"] = "Adam"  # "Adam" or "SGD"
+config["LOSS_FUNC"] = "CrossEntropy"  # "MSE" or "CrossEntropy"
 config["DEVICE"] = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Init the project directory
@@ -42,7 +43,7 @@ logger = Logger(PROJECT, PROJECT_NAME, config, project_dir, enable=ENABLE_LOGGER
 def main():
     # Load the dataset and dataloader
     dataset = AOIDataset(is_train=True, device=config["DEVICE"])
-    train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=config["BATCH_SIZE"], train_size=config["TRAIN_SIZE"])
+    train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=config["BATCH_SIZE"], train_size=config["TRAINING_SET_RATIO"])
 
     # Create the model
     model = SimpleModel().to(config["DEVICE"])
@@ -64,12 +65,12 @@ def main():
     else:
         raise ValueError(f"Optimizer {config['optimizer']} not supported")
 
-    # Train the model
+    # Start training
     for epoch in range(config["NUM_EPOCHS"]):
-        total_correct = 0
-        total_loss = 0.0
-
+        # Train the model
         model.train()
+        train_correct = 0
+        train_loss = 0.0
         for batch_idx, (images, labels) in enumerate(tqdm(train_dataloader)):
             optimizer.zero_grad()
             outputs = model(images)
@@ -77,15 +78,38 @@ def main():
             loss.backward()
             optimizer.step()
 
-            total_loss += loss.item()
+            train_loss += loss.item()
             _, predicted = torch.max(outputs, 1)
-            total_correct += (predicted == labels).sum().item()
+            train_correct += (predicted == labels).sum().item()
+
+        # Calculate the training accuracy
+        train_accuracy = train_correct / len(train_dataloader.dataset)
+        train_loss = train_loss / len(train_dataloader.dataset)
+        print(f"Epoch: {epoch + 1}/{config['NUM_EPOCHS']}, Loss: {train_loss:.4f}, Accuracy: {train_accuracy:.4f}")
+
+        # Test the model
+        test_accuracy = None
+        test_loss = None
+        if (epoch + 1) % config["TEST_PERIOD"] == 0:
+            print("Testing the model...")
+            model.eval()
+            test_correct = 0
+            test_loss = 0.0
+            with torch.no_grad():
+                for images, labels in test_dataloader:
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                    test_loss += loss.item()
+                    _, predicted = torch.max(outputs, 1)
+                    test_correct += (predicted == labels).sum().item()
+
+            # Calculate the test accuracy
+            test_accuracy = test_correct / len(test_dataloader.dataset)
+            test_loss = test_loss / len(test_dataloader.dataset)
+            print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")
 
         # Logging the results
-        accuracy = total_correct / len(train_dataloader.dataset)
-        loss = total_loss / len(train_dataloader.dataset)
-        logger.Log(epoch + 1, loss, accuracy)
-        print(f"Epoch: {epoch + 1}/{config['NUM_EPOCHS']}, Loss: {loss:.4f}, Accuracy: {accuracy:.4f}")
+        logger.Log(epoch + 1, train_loss, train_accuracy, test_loss, test_accuracy)
 
     # Save the model
     SaveModel(model, project_dir / "weights")

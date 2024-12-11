@@ -28,10 +28,17 @@ class Logger(object):
 
             print(f"Saves logs to {logs_dir}")
 
-    def Log(self, epoch: int, loss: float, accuracy: float) -> None:
+    def Log(self, epoch: int, loss: float, accuracy: float, test_loss: float = None, test_accuracy: float = None) -> None:
         if not self.enable:
             return
 
+        # Log the results
         self.writer.add_scalar("Train/Loss", loss, epoch)
         self.writer.add_scalar("Train/Accuracy", accuracy, epoch)
+        if test_loss is not None:
+            self.writer.add_scalar("Test/Loss", test_loss, epoch)
+        if test_accuracy is not None:
+            self.writer.add_scalar("Test/Accuracy", test_accuracy, epoch)
+
+        # Flush the writer
         self.writer.flush()
