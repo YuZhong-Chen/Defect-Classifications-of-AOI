@@ -1,0 +1,21 @@
+/* Reference: https://aka.ms/devcontainer.json */
+{
+    "name": "ML Final Project",
+    "dockerComposeFile": "../docker/compose.yaml",
+    "service": "ml-final-project",
+    // workspace settings
+    "workspaceFolder": "/home/user/Defect-Classifications-of-AOI",
+    // Vscode extensions
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "donjayamanne.python-extension-pack",
+                "eamodio.gitlens",
+                "mhutchie.git-graph",
+                "streetsidesoftware.code-spell-checker",
+                "oderwat.indent-rainbow",
+                "ms-python.black-formatter"
+            ]
+        }
+    }
+}

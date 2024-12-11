@@ -1,0 +1,36 @@
+version: '3'
+services:
+  ml-final-project:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: yuzhong1214/ml-final-project:latest
+    container_name: ml-final-project
+    stdin_open: true
+    tty: true
+    privileged: true
+    command: /bin/bash
+    network_mode: host
+    working_dir: /home/user/Defect-Classifications-of-AOI
+    environment:
+      - DISPLAY=${DISPLAY}
+    # Access GPU.
+    # Reference : https://docs.docker.com/compose/gpu-support/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    volumes:
+      # Mount local timezone into container. ( Readonly )
+      # Reference: https://stackoverflow.com/questions/57607381/how-do-i-change-timezone-in-a-docker-container
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      # Mount X11 server
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      # Mount devices.
+      - /dev:/dev
+      # Mount workspace
+      - ..:/home/user/Defect-Classifications-of-AOI
