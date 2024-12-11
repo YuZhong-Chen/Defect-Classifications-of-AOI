@@ -10,17 +10,21 @@ from torchsummary import summary
 
 from model import SimpleModel, SaveModel
 from aoi_dataloader import AOIDataset, DisplayDatasetImage, GetDataLoader
+from logger import Logger
 
 # Project Configurations
 PROJECT = "aoi-classification"
 PROJECT_NAME = PROJECT + "-basic-" + datetime.datetime.now().strftime("%m-%d-%H-%M")
+ENABLE_LOGGER = True
+ENABLE_WANDB = False
 
 # Training Configurations
-BATCH_SIZE = 32
-TRAIN_SIZE = 0.8
-NUM_EPOCHS = 1
-LEARNING_RATE = 0.001
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+config = {}
+config["BATCH_SIZE"] = 64
+config["TRAIN_SIZE"] = 0.8
+config["NUM_EPOCHS"] = 5
+config["LEARNING_RATE"] = 0.001
+config["DEVICE"] = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Init the project directory
 checkpoint_dir = Path(os.path.dirname(os.path.abspath(__file__))).parent / "checkpoints"
@@ -29,26 +33,29 @@ project_dir = checkpoint_dir / PROJECT_NAME
 project_dir.mkdir(exist_ok=True)
 print(f"Project: {PROJECT_NAME}")
 
+# Init the logger
+logger = Logger(PROJECT, PROJECT_NAME, config, project_dir, enable=ENABLE_LOGGER, use_wandb=ENABLE_WANDB)
+
 
 def main():
     dataset = AOIDataset(is_train=True)
-    train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=BATCH_SIZE, train_size=TRAIN_SIZE)
+    train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=config["BATCH_SIZE"], train_size=config["TRAIN_SIZE"])
 
     model = SimpleModel()
-    model.to(DEVICE)
+    model.to(config["DEVICE"])
 
-    summary(model, input_size=(1, 512, 512), device=DEVICE)
+    summary(model, input_size=(1, 512, 512), device=config["DEVICE"])
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config["LEARNING_RATE"])
 
     model.train()
-    for epoch in range(NUM_EPOCHS):
+    for epoch in range(config["NUM_EPOCHS"]):
         total_correct = 0
         total_loss = 0.0
 
         for batch_idx, (images, labels) in enumerate(tqdm(train_dataloader)):
-            images, labels = images.to(DEVICE), labels.to(DEVICE)
+            images, labels = images.to(config["DEVICE"]), labels.to(config["DEVICE"])
 
             optimizer.zero_grad()
             outputs = model(images)
@@ -62,9 +69,10 @@ def main():
 
         accuracy = total_correct / len(train_dataloader.dataset)
         loss = total_loss / len(train_dataloader.dataset)
-        print(f"Epoch: {epoch+1}/{NUM_EPOCHS}, Loss: {loss:.4f}, Accuracy: {accuracy:.4f}")
+        logger.Log(epoch + 1, loss, accuracy)
+        print(f"Epoch: {epoch + 1}/{config['NUM_EPOCHS']}, Loss: {loss:.4f}, Accuracy: {accuracy:.4f}")
 
-    SaveModel(model, project_dir)
+    SaveModel(model, project_dir / "weights")
 
 
 if __name__ == "__main__":
