@@ -7,8 +7,8 @@ from pathlib import Path
 class SimpleModel(nn.Module):
     def __init__(self, num_classes: int = 6):
         super(SimpleModel, self).__init__()
-
-        # Input size: 1x512x512
+        
+        self.input_size = (1, 512, 512)
         self.features = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=7, stride=3, padding=3),  # 32x171x171
             nn.ReLU(),
