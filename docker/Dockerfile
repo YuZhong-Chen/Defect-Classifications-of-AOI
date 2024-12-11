@@ -46,7 +46,8 @@ RUN apt-get update && apt-get install -y \
 # Install python dependencies
 RUN pip3 install \
     numpy \
-    matplotlib
+    matplotlib \
+    torchsummary
 
 ENV PATH=/home/$USERNAME/.local/bin:$PATH
 COPY .bashrc /home/$USERNAME/.bashrc
