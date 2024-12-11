@@ -5,3 +5,6 @@ __pycache__
 # Dataset
 /data/*
 !/data/.gitkeep
+
+# Model weights
+/checkpoints
