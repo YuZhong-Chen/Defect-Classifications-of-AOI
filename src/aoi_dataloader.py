@@ -1,16 +1,18 @@
 import os
 import cv2
+import PIL.Image as Image
 import numpy as np
 import pandas as pd
 from pathlib import Path
 
 import torch
+import torchvision.transforms as transforms
 from torchvision.io import read_image
 from torch.utils.data import Dataset, DataLoader, random_split
 
 
 class AOIDataset(Dataset):
-    def __init__(self, is_train=True, device: str = "cpu"):
+    def __init__(self, is_train=True, device: str = "cpu", use_transform=True):
         # Path
         self.root_dir = Path(__file__).parent.parent
         self.data_dir = self.root_dir / "data"
@@ -23,6 +25,12 @@ class AOIDataset(Dataset):
         self.img_labels = pd.read_csv(self.train_csv) if is_train else pd.read_csv(self.test_csv)
         self.img_dir = self.train_images_dir if is_train else self.test_images_dir
         self.device = device
+
+        # Transform
+        if use_transform:
+            self.transform = transforms.Compose([transforms.autoaugment.AutoAugment(), transforms.ToTensor(), transforms.Normalize((0.5), (0.1))])
+        else:
+            self.transform = None
 
         # Data
         self.images = []
@@ -41,7 +49,11 @@ class AOIDataset(Dataset):
         print("Loading data...")
         for idx in range(len(self)):
             img_path = self.img_dir / self.img_labels.iloc[idx, 0]
-            image = read_image(str(img_path)).float().to(self.device)
+            if self.transform:
+                image = Image.open(img_path)
+                image = self.transform(image).to(self.device)
+            else:
+                image = read_image(str(img_path)).float().to(self.device)
             label = torch.tensor(self.img_labels.iloc[idx, 1]).to(self.device)
             self.images.append(image)
             self.labels.append(label)

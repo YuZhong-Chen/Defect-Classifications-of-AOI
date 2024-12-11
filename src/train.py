@@ -22,7 +22,7 @@ ENABLE_WANDB = False
 config = {}
 config["BATCH_SIZE"] = 128
 config["TRAINING_SET_RATIO"] = 0.8
-config["NUM_EPOCHS"] = 70
+config["NUM_EPOCHS"] = 50
 config["LEARNING_RATE"] = 0.0002
 config["TEST_PERIOD"] = 5
 config["OPTIMIZER"] = "Adam"  # "Adam" or "SGD"
@@ -43,7 +43,7 @@ logger = Logger(PROJECT, PROJECT_NAME, config, project_dir, enable=ENABLE_LOGGER
 def main():
     # Load the dataset and dataloader
     # NOTE: If the GPU memory is not enough, set the device to "cpu" and move the data to the GPU when training.
-    dataset = AOIDataset(is_train=True, device=config["DEVICE"])
+    dataset = AOIDataset(is_train=True, device=config["DEVICE"], use_transform=True)
     train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=config["BATCH_SIZE"], train_size=config["TRAINING_SET_RATIO"])
 
     # Create the model

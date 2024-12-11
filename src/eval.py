@@ -12,7 +12,7 @@ from model import SimpleModel, LoadModel
 from aoi_dataloader import AOIDataset
 
 # Project Configurations
-PROJECT_NAME = "aoi-classification-basic-12-12-00-52"
+PROJECT_NAME = "aoi-classification-basic-12-12-04-53"
 
 # Training Configurations
 config = {}
@@ -31,7 +31,7 @@ print(f"Project: {PROJECT_NAME}")
 
 def main():
     # Load the evaluation dataset
-    eval_dataset = AOIDataset(is_train=False, device=config["DEVICE"])
+    eval_dataset = AOIDataset(is_train=False, device="cpu", use_transform=True)
     eval_dataloader = DataLoader(eval_dataset, batch_size=config["BATCH_SIZE"], shuffle=False)
     predicted_labels = eval_dataset.img_labels.copy()
 
@@ -45,6 +45,7 @@ def main():
     current_index = 0
     with torch.no_grad():
         for images, _ in tqdm(eval_dataloader):
+            images = images.to(config["DEVICE"])
             outputs = model(images)
             _, predicted = torch.max(outputs, 1)
             predicted = predicted.cpu().int().numpy()
