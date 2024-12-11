@@ -24,14 +24,29 @@ class AOIDataset(Dataset):
         self.img_dir = self.train_images_dir if is_train else self.test_images_dir
         self.device = device
 
+        # Data
+        self.images = []
+        self.labels = []
+
+        # Load the data
+        self.LoadData()
+
     def __len__(self) -> int:
         return len(self.img_labels)
 
     def __getitem__(self, idx) -> tuple:
-        img_path = self.img_dir / self.img_labels.iloc[idx, 0]
-        image = read_image(str(img_path)).float().to(self.device)
-        label = torch.tensor(self.img_labels.iloc[idx, 1]).to(self.device)
-        return image, label
+        return self.images[idx], self.labels[idx]
+
+    def LoadData(self) -> None:
+        print("Loading data...")
+        for idx in range(len(self)):
+            img_path = self.img_dir / self.img_labels.iloc[idx, 0]
+            image = read_image(str(img_path)).float().to(self.device)
+            label = torch.tensor(self.img_labels.iloc[idx, 1]).to(self.device)
+            self.images.append(image)
+            self.labels.append(label)
+        print("Data loaded")
+        return
 
 
 def DisplayDatasetImage(dataset: Dataset, idx: int = 0) -> None:

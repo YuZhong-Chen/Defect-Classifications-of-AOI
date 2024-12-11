@@ -15,14 +15,14 @@ from logger import Logger
 # Project Configurations
 PROJECT = "aoi-classification"
 PROJECT_NAME = PROJECT + "-basic-" + datetime.datetime.now().strftime("%m-%d-%H-%M")
-ENABLE_LOGGER = True
-ENABLE_WANDB = True
+ENABLE_LOGGER = False
+ENABLE_WANDB = False
 
 # Training Configurations
 config = {}
 config["BATCH_SIZE"] = 128
 config["TRAINING_SET_RATIO"] = 0.8
-config["NUM_EPOCHS"] = 20
+config["NUM_EPOCHS"] = 70
 config["LEARNING_RATE"] = 0.0002
 config["TEST_PERIOD"] = 5
 config["OPTIMIZER"] = "Adam"  # "Adam" or "SGD"
@@ -42,6 +42,7 @@ logger = Logger(PROJECT, PROJECT_NAME, config, project_dir, enable=ENABLE_LOGGER
 
 def main():
     # Load the dataset and dataloader
+    # NOTE: If the GPU memory is not enough, set the device to "cpu" and move the data to the GPU when training.
     dataset = AOIDataset(is_train=True, device=config["DEVICE"])
     train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=config["BATCH_SIZE"], train_size=config["TRAINING_SET_RATIO"])
 
