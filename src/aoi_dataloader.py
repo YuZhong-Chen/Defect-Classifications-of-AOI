@@ -12,7 +12,7 @@ from torch.utils.data import Dataset, DataLoader, random_split
 
 
 class AOIDataset(Dataset):
-    def __init__(self, is_train=True, device: str = "cpu", use_transform=True):
+    def __init__(self, is_train=True, device: str = "cpu", load_data: bool = True, use_transform: bool = True):
         # Path
         self.root_dir = Path(__file__).parent.parent
         self.data_dir = self.root_dir / "data"
@@ -32,18 +32,28 @@ class AOIDataset(Dataset):
         else:
             self.transform = None
 
-        # Data
-        self.images = []
-        self.labels = []
-
-        # Load the data
-        self.LoadData()
+        # Load data
+        self.load_data = load_data
+        if load_data:
+            self.images = []
+            self.labels = []
+            self.LoadData()
 
     def __len__(self) -> int:
         return len(self.img_labels)
 
     def __getitem__(self, idx) -> tuple:
-        return self.images[idx], self.labels[idx]
+        if self.load_data:
+            return self.images[idx], self.labels[idx]
+        else:
+            img_path = self.img_dir / self.img_labels.iloc[idx, 0]
+            if self.transform:
+                image = Image.open(img_path)
+                image = self.transform(image).to(self.device)
+            else:
+                image = read_image(str(img_path)).float().to(self.device)
+            label = torch.tensor(self.img_labels.iloc[idx, 1]).to(self.device)
+            return image, label
 
     def LoadData(self) -> None:
         print("Loading data...")
