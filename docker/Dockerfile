@@ -47,7 +47,9 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install \
     numpy \
     matplotlib \
-    torchsummary
+    torchsummary \
+    wandb \
+    torch-tb-profiler
 
 ENV PATH=/home/$USERNAME/.local/bin:$PATH
 COPY .bashrc /home/$USERNAME/.bashrc
