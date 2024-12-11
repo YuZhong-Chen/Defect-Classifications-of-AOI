@@ -28,7 +28,7 @@ class AOIDataset(Dataset):
 
     def __getitem__(self, idx) -> tuple:
         img_path = self.img_dir / self.img_labels.iloc[idx, 0]
-        image = read_image(str(img_path))
+        image = read_image(str(img_path)).float()
         label = self.img_labels.iloc[idx, 1]
         return image, label
 
