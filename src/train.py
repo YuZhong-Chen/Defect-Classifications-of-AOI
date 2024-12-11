@@ -24,6 +24,8 @@ config["BATCH_SIZE"] = 128
 config["TRAIN_SIZE"] = 0.8
 config["NUM_EPOCHS"] = 50
 config["LEARNING_RATE"] = 0.0002
+config["OPTIMIZER"] = "Adam" # "Adam" or "SGD"
+config["LOSS_FUNC"] = "CrossEntropy" # "MSE" or "CrossEntropy"
 config["DEVICE"] = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Init the project directory
@@ -46,9 +48,21 @@ def main():
     model = SimpleModel().to(config["DEVICE"])
     summary(model, input_size=model.input_size, device=config["DEVICE"])
 
-    # Specify the loss function and optimizer
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config["LEARNING_RATE"])
+    # Specify the loss function
+    if config["LOSS_FUNC"] == "CrossEntropy":
+        criterion = nn.CrossEntropyLoss()
+    elif config["LOSS_FUNC"] == "MSE":
+        criterion = nn.MSELoss()
+    else:
+        raise ValueError(f"Loss function {config['loss']} not supported")
+
+    # Specify the optimizer
+    if config["OPTIMIZER"] == "Adam":
+        optimizer = torch.optim.Adam(model.parameters(), lr=config["LEARNING_RATE"])
+    elif config["OPTIMIZER"] == "SGD":
+        optimizer = torch.optim.SGD(model.parameters(), lr=config["LEARNING_RATE"], momentum=0.9)
+    else:
+        raise ValueError(f"Optimizer {config['optimizer']} not supported")
 
     # Train the model
     for epoch in range(config["NUM_EPOCHS"]):
