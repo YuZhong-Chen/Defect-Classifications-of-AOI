@@ -1,6 +1,8 @@
 import torch
 from torch import nn
 
+from pathlib import Path
+
 
 class SimpleModel(nn.Module):
     def __init__(self, num_classes: int = 6):
@@ -26,3 +28,10 @@ class SimpleModel(nn.Module):
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
+
+
+def SaveModel(model: nn.Module, path: Path) -> None:
+    print(f"Saving model to {path}")
+    path.mkdir(exist_ok=True)
+    torch.save({"model": model.state_dict()}, path / "model.pth")
+    return
