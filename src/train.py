@@ -9,21 +9,21 @@ from torch import nn
 from torchsummary import summary
 
 from model import SimpleModel, SaveModel
-from aoi_dataloader import AOIDataset, DisplayDatasetImage, GetDataLoader
+from aoi_dataloader import AOIDataset, GetDataLoader
 from logger import Logger
 
 # Project Configurations
 PROJECT = "aoi-classification"
 PROJECT_NAME = PROJECT + "-basic-" + datetime.datetime.now().strftime("%m-%d-%H-%M")
-ENABLE_LOGGER = True
+ENABLE_LOGGER = False
 ENABLE_WANDB = False
 
 # Training Configurations
 config = {}
-config["BATCH_SIZE"] = 64
+config["BATCH_SIZE"] = 128
 config["TRAIN_SIZE"] = 0.8
-config["NUM_EPOCHS"] = 5
-config["LEARNING_RATE"] = 0.001
+config["NUM_EPOCHS"] = 10
+config["LEARNING_RATE"] = 0.0003
 config["DEVICE"] = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Init the project directory
@@ -38,7 +38,7 @@ logger = Logger(PROJECT, PROJECT_NAME, config, project_dir, enable=ENABLE_LOGGER
 
 
 def main():
-    dataset = AOIDataset(is_train=True)
+    dataset = AOIDataset(is_train=True, device=config["DEVICE"])
     train_dataloader, test_dataloader = GetDataLoader(dataset, batch_size=config["BATCH_SIZE"], train_size=config["TRAIN_SIZE"])
 
     model = SimpleModel()
@@ -55,8 +55,6 @@ def main():
         total_loss = 0.0
 
         for batch_idx, (images, labels) in enumerate(tqdm(train_dataloader)):
-            images, labels = images.to(config["DEVICE"]), labels.to(config["DEVICE"])
-
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
