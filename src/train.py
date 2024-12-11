@@ -76,6 +76,12 @@ def main():
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
+
+            # L2 regularization
+            l2_lambda = 0.0001
+            l2_norm = sum(param.pow(2.0).sum() for param in model.parameters())
+            loss += l2_lambda * l2_norm
+
             loss.backward()
             optimizer.step()
 
