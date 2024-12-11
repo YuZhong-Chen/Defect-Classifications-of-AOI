@@ -1,4 +1,6 @@
 /.vscode
+/.hypothesis
+__pycache__
 
 # Dataset
 /data/*
