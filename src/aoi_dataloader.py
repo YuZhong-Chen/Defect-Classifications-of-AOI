@@ -28,7 +28,14 @@ class AOIDataset(Dataset):
 
         # Transform
         if use_transform:
-            self.transform = transforms.Compose([transforms.autoaugment.AutoAugment(), transforms.ToTensor(), transforms.Normalize((0.5), (0.1))])
+            self.transform = transforms.Compose(
+                [
+                    transforms.Resize((256, 256)),
+                    transforms.autoaugment.AutoAugment(),
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.5), (0.1)),
+                ]
+            )
         else:
             self.transform = None
 

@@ -12,7 +12,7 @@ from model import SimpleModel, LoadModel
 from aoi_dataloader import AOIDataset
 
 # Project Configurations
-PROJECT_NAME = "aoi-classification-basic-12-12-04-53"
+PROJECT_NAME = "aoi-classification-basic-12-13-01-05"
 
 # Training Configurations
 config = {}

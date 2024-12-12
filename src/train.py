@@ -22,12 +22,16 @@ ENABLE_WANDB = False
 config = {}
 config["BATCH_SIZE"] = 128
 config["TRAINING_SET_RATIO"] = 0.8
-config["NUM_EPOCHS"] = 50
-config["LEARNING_RATE"] = 0.0002
+config["NUM_EPOCHS"] = 500
+config["LEARNING_RATE"] = 0.00001
 config["TEST_PERIOD"] = 5
 config["OPTIMIZER"] = "Adam"  # "Adam" or "SGD"
 config["LOSS_FUNC"] = "CrossEntropy"  # "MSE" or "CrossEntropy"
 config["DEVICE"] = "cuda" if torch.cuda.is_available() else "cpu"
+
+# Enable the cudnn benchmark
+if config["DEVICE"] == "cuda":
+    torch.backends.cudnn.benchmark = True
 
 # Init the project directory
 checkpoint_dir = Path(os.path.dirname(os.path.abspath(__file__))).parent / "checkpoints"

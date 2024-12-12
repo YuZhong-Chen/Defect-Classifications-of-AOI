@@ -8,23 +8,27 @@ class SimpleModel(nn.Module):
     def __init__(self, num_classes: int = 6, dropout_rate: float = 0.5):
         super(SimpleModel, self).__init__()
 
-        self.input_size = (1, 512, 512)
+        self.input_size = (1, 256, 256)
         self.features = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=7, stride=3, padding=3),  # 32x171x171
-            nn.LeakyReLU(),
-            nn.Conv2d(32, 64, kernel_size=7, stride=3, padding=3),  # 64x57x57
-            nn.LeakyReLU(),
-            nn.Conv2d(64, 128, kernel_size=7, stride=3, padding=3),  # 128x19x19
-            nn.LeakyReLU(),
+            nn.Conv2d(1, 64, kernel_size=7, stride=3, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 128, kernel_size=5, stride=2, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
         )
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.classifier = nn.Sequential(
             nn.Dropout(p=dropout_rate),
-            nn.Linear(46208, 1024),
-            nn.LeakyReLU(),
+            nn.Linear(256 * 6 * 6, 2048),
+            nn.ReLU(inplace=True),
             nn.Dropout(p=dropout_rate),
-            nn.Linear(1024, 128),
-            nn.LeakyReLU(),
-            nn.Linear(128, num_classes),
+            nn.Linear(2048, 2048),
+            nn.ReLU(inplace=True),
+            nn.Linear(2048, num_classes),
         )
 
         # Initialize the network
@@ -33,11 +37,12 @@ class SimpleModel(nn.Module):
     def InitNetwork(self) -> None:
         for layer in (self.features, self.classifier):
             if isinstance(layer, nn.Linear):
-                nn.init.xavier_uniform_(layer.weight, gain=nn.init.calculate_gain("leaky_relu"))
+                nn.init.xavier_uniform_(layer.weight, gain=nn.init.calculate_gain("relu"))
                 nn.init.zeros_(layer.bias, 0)
 
     def forward(self, x) -> torch.Tensor:
         x = self.features(x)
+        x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
