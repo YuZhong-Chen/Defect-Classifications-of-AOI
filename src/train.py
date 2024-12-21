@@ -21,9 +21,9 @@ ENABLE_WANDB = False
 # Training Configurations
 config = {}
 config["BATCH_SIZE"] = 128
-config["TRAINING_SET_RATIO"] = 0.8
-config["NUM_EPOCHS"] = 500
-config["LEARNING_RATE"] = 0.00001
+config["TRAINING_SET_RATIO"] = 0.999
+config["NUM_EPOCHS"] = 150
+config["LEARNING_RATE"] = 0.0001
 config["TEST_PERIOD"] = 5
 config["OPTIMIZER"] = "Adam"  # "Adam" or "SGD"
 config["LOSS_FUNC"] = "CrossEntropy"  # "MSE" or "CrossEntropy"

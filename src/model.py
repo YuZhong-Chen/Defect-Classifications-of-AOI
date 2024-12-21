@@ -20,10 +20,10 @@ class SimpleModel(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2),
         )
-        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
+        self.avgpool = nn.AdaptiveAvgPool2d((4, 4))
         self.classifier = nn.Sequential(
             nn.Dropout(p=dropout_rate),
-            nn.Linear(256 * 6 * 6, 2048),
+            nn.Linear(256 * 4 * 4, 2048),
             nn.ReLU(inplace=True),
             nn.Dropout(p=dropout_rate),
             nn.Linear(2048, 2048),
