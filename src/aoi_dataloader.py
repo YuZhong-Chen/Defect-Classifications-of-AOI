@@ -31,7 +31,12 @@ class AOIDataset(Dataset):
             self.transform = transforms.Compose(
                 [
                     transforms.Resize((256, 256)),
-                    transforms.autoaugment.AutoAugment(),
+                    # transforms.Resize((200, 200)),
+                    # transforms.Pad((56, 56, 56, 56), padding_mode="symmetric"),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.RandomVerticalFlip(),
+                    transforms.RandomRotation(10),
+                    transforms.ColorJitter(),
                     transforms.ToTensor(),
                     transforms.Normalize((0.5), (0.1)),
                 ]
@@ -51,6 +56,8 @@ class AOIDataset(Dataset):
 
     def __getitem__(self, idx) -> tuple:
         if self.load_data:
+            if self.transform:
+                return self.transform(self.images[idx]).to(self.device), self.labels[idx]
             return self.images[idx], self.labels[idx]
         else:
             img_path = self.img_dir / self.img_labels.iloc[idx, 0]
@@ -68,7 +75,6 @@ class AOIDataset(Dataset):
             img_path = self.img_dir / self.img_labels.iloc[idx, 0]
             if self.transform:
                 image = Image.open(img_path)
-                image = self.transform(image).to(self.device)
             else:
                 image = read_image(str(img_path)).float().to(self.device)
             label = torch.tensor(self.img_labels.iloc[idx, 1]).to(self.device)
